@@ -35,6 +35,35 @@
     
     
     <entry>
+      <title>Linux基础 + Python四则计算器</title>
+      <link href="/2026/07/28/Linux%E5%9F%BA%E7%A1%80-Python%E5%9B%9B%E5%88%99%E8%AE%A1%E7%AE%97%E5%99%A8/"/>
+      <url>/2026/07/28/Linux%E5%9F%BA%E7%A1%80-Python%E5%9B%9B%E5%88%99%E8%AE%A1%E7%AE%97%E5%99%A8/</url>
+      
+        <content type="html"><![CDATA[<h2 id="｜Kali-Linux-环境搭建-基础命令实操"><a href="#｜Kali-Linux-环境搭建-基础命令实操" class="headerlink" title="｜Kali Linux 环境搭建 &amp; 基础命令实操"></a>｜Kali Linux 环境搭建 &amp; 基础命令实操</h2><ol><li><p><strong>虚拟机网络调试</strong><br>查询 Ubuntu 靶机 IP：<code>192.168.170.128</code>，Kali ping 测试连通正常，NAT 模式攻防实验环境搭建完成。</p></li><li><p><strong>基础文件命令练习（工作目录 <code>~/sec_practice</code>）</strong><br><code>pwd</code>、<code>touch</code>、<code>ls</code>、<code>ls -l</code>、<code>cp</code>、<code>mv</code>、<code>mkdir</code></p></li><li><p><strong>权限管理</strong><br>使用 <code>chmod 755</code> &#x2F; <code>chmod 644</code> 修改文件权限，理解数字权限机制。</p></li><li><p><strong>Vim 基础入门</strong><br><code>i</code> 编辑模式、<code>Esc</code> 退出编辑、<code>:wq</code> 保存退出，完成基础文本编辑。</p></li></ol><h2 id="｜Python-基础"><a href="#｜Python-基础" class="headerlink" title="｜Python 基础"></a>｜Python 基础</h2><p>知识点：变量、数值类型、<code>input()</code>、<code>print()</code>、算术运算符、<code>if/elif/else</code> 条件分支<br>项目：简易四则运算计算器，支持 <code>+ - * /</code>，可识别非法运算符。</p><h3 id="源代码"><a href="#源代码" class="headerlink" title="源代码"></a>源代码</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 简易四则计算器</span></span><br><span class="line">num1 = <span class="built_in">float</span>(<span class="built_in">input</span>(<span class="string">&quot;请输入第一个数字：&quot;</span>))</span><br><span class="line">op = <span class="built_in">input</span>(<span class="string">&quot;请输入运算符(+ - \* /)：&quot;</span>)</span><br><span class="line">num2 = <span class="built_in">float</span>(<span class="built_in">input</span>(<span class="string">&quot;请输入第二个数字：&quot;</span>))</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> op == <span class="string">&quot;+&quot;</span>:</span><br><span class="line">    res = num1 + num2</span><br><span class="line"><span class="keyword">elif</span> op == <span class="string">&quot;-&quot;</span>:</span><br><span class="line">    res = num1 - num2</span><br><span class="line"><span class="keyword">elif</span> op == <span class="string">&quot;\*&quot;</span>:</span><br><span class="line">    res = num1 \* num2</span><br><span class="line"><span class="keyword">elif</span> op == <span class="string">&quot;/&quot;</span>:</span><br><span class="line">    res = num1 / num2</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    res = <span class="string">&quot;运算符非法&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;计算结果：<span class="subst">&#123;res&#125;</span>&quot;</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure><h2 id="💡-学习总结"><a href="#💡-学习总结" class="headerlink" title="💡 学习总结"></a>💡 学习总结</h2><p><strong>收获</strong></p><ul><li>掌握 VMware 多虚拟机局域网互通配置方法；</li><li>熟练 Linux 日常文件管理命令；</li><li>学会 Vim 基础操作；</li><li>独立完成首个 Python 逻辑脚本，建立代码手感。</li></ul><p><strong>不足</strong><br>计算器缺少异常处理，不支持循环运算；Linux 文本检索、日志相关命令尚未练习。</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 网络安全学习 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Kali Linux </tag>
+            
+            <tag> Python </tag>
+            
+            <tag> 自学日志 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>blog for test</title>
       <link href="/2026/07/27/blog-for-test/"/>
       <url>/2026/07/27/blog-for-test/</url>
@@ -51,9 +80,9 @@
       
         <tags>
             
-            <tag> Hexo </tag>
-            
             <tag> 测试 </tag>
+            
+            <tag> Hexo </tag>
             
         </tags>
       
