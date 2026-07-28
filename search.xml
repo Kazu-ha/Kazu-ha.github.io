@@ -4,6 +4,37 @@
   
     
     <entry>
+      <title>Github Hexo搭建+butterfly优化</title>
+      <link href="/2026/07/28/Github-Hexo%E6%90%AD%E5%BB%BA-butterfly%E4%BC%98%E5%8C%96/"/>
+      <url>/2026/07/28/Github-Hexo%E6%90%AD%E5%BB%BA-butterfly%E4%BC%98%E5%8C%96/</url>
+      
+        <content type="html"><![CDATA[<h1 id="Github-Hexo搭建-Butterfly主题优化记录"><a href="#Github-Hexo搭建-Butterfly主题优化记录" class="headerlink" title="Github Hexo搭建+Butterfly主题优化记录"></a>Github Hexo搭建+Butterfly主题优化记录</h1><p>本文记录我从零搭建 Hexo 静态博客，搭配 Butterfly 主题并部署到 Github Pages 的全过程，包含大量实操踩坑经验，方便后续复盘。</p><h2 id="一、所需环境准备"><a href="#一、所需环境准备" class="headerlink" title="一、所需环境准备"></a>一、所需环境准备</h2><p>需要提前安装两款工具：</p><ol><li>Git</li><li>Node.js</li></ol><p>安装完成后，打开 Git Bash，全局安装 Hexo：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">npm install -g hexo-cli</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">```bash</span><br><span class="line"><span class="comment"># 创建博客文件夹并初始化</span></span><br><span class="line">hexo init Kazu-ha_blog</span><br><span class="line"><span class="built_in">cd</span> Kazu-ha_blog</span><br><span class="line">npm install</span><br><span class="line"></span><br><span class="line"><span class="comment"># 本地启动预览</span></span><br><span class="line">hexo s</span><br></pre></td></tr></table></figure><p>访问 <code>http://localhost:4000</code>，页面正常显示即代表环境搭建成功。</p><h2 id="二、安装-Butterfly-主题"><a href="#二、安装-Butterfly-主题" class="headerlink" title="二、安装 Butterfly 主题"></a>二、安装 Butterfly 主题</h2><p>博客根目录执行：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/jerryc127/hexo-theme-butterfly.git themes/butterfly</span><br></pre></td></tr></table></figure><blockquote><p>⚠️【重点避坑】<br>不要直接修改 <code>themes/butterfly/_config.yml</code><br>在博客<strong>根目录</strong>新建 <code>_config.butterfly.yml</code>，所有美化配置写在此文件。<br>好处：后续升级主题，自定义美化设置不会被覆盖。</p></blockquote><h2 id="三、图片资源存放规范"><a href="#三、图片资源存放规范" class="headerlink" title="三、图片资源存放规范"></a>三、图片资源存放规范</h2><p>在 <code>source</code> 文件夹新建 <code>img</code> 目录，头像、横幅、文章封面统一放入。</p><p>✅ 正确路径写法</p><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">banner_img:</span> <span class="string">&quot;/img/bizhi.jpg&quot;</span></span><br><span class="line"><span class="attr">avatar:</span></span><br><span class="line">  <span class="attr">url:</span> <span class="string">&quot;/img/touxiang.jpg&quot;</span></span><br></pre></td></tr></table></figure><p>❌ 禁止填写电脑本地路径（如 <code>D:\xxx\touxiang.jpg</code>），部署线上后图片无法加载。</p><h2 id="四、部署到-Github-Pages"><a href="#四、部署到-Github-Pages" class="headerlink" title="四、部署到 Github Pages"></a>四、部署到 Github Pages</h2><ol><li><p>Github 创建仓库，命名格式：<code>用户名.github.io</code></p></li><li><p>修改根目录 <code>_config.yml</code> 部署配置</p></li></ol><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">deploy:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">git</span></span><br><span class="line">  <span class="attr">repo:</span> <span class="string">https://github.com/Kazu-ha/kazu-ha.github.io.git</span></span><br><span class="line">  <span class="attr">branch:</span> <span class="string">main</span></span><br></pre></td></tr></table></figure><ol start="3"><li>安装部署插件</li></ol><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure><ol start="4"><li>一键部署命令</li></ol><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo clean &amp;&amp; hexo g &amp;&amp; hexo d</span><br></pre></td></tr></table></figure><p>推送完成等待 1~3 分钟，访问 <code>https://kazu-ha.github.io</code> 打开博客。</p><h2 id="五、日常写文章标准流程"><a href="#五、日常写文章标准流程" class="headerlink" title="五、日常写文章标准流程"></a>五、日常写文章标准流程</h2><ol><li>新建文章</li></ol><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo new <span class="string">&quot;文章标题&quot;</span></span><br></pre></td></tr></table></figure><p>文件自动生成至 <code>source/_posts/</code></p><ol start="2"><li>编辑完成，本地预览</li></ol><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo s</span><br></pre></td></tr></table></figure><ol start="3"><li>排版确认无误，发布上线</li></ol><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo clean &amp;&amp; hexo g &amp;&amp; hexo d</span><br></pre></td></tr></table></figure><h2 id="六、搭建过程踩坑总结"><a href="#六、搭建过程踩坑总结" class="headerlink" title="六、搭建过程踩坑总结"></a>六、搭建过程踩坑总结</h2><ol><li><p>修改配置页面不生效<br>Hexo 自带缓存，改动配置必须执行 <code>hexo clean</code>；浏览器使用 <code>Ctrl+F5</code> 强制刷新。</p></li><li><p>YAML 配置粘贴失效<br>冒号 <code>:</code> 后面必须保留空格；不要一次性粘贴大量代码，一处格式错误会造成下方所有配置失效，建议分段测试。</p></li><li><p>图片空白无法展示<br>路径写法错误，统一使用 <code>/img/图片名称.jpg</code> 相对路径。</p></li></ol><h2 id="七、后续优化计划"><a href="#七、后续优化计划" class="headerlink" title="七、后续优化计划"></a>七、后续优化计划</h2><ul><li><p>创建关于页面、友链页面</p></li><li><p>接入评论系统</p></li><li><p>持续微调页面样式与动画效果</p></li></ul>]]></content>
+      
+      
+      <categories>
+          
+          <category> 技术教程 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Hexo </tag>
+            
+            <tag> Butterfly </tag>
+            
+            <tag> Github Pages </tag>
+            
+            <tag> 博客 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>blog for test</title>
       <link href="/2026/07/27/blog-for-test/"/>
       <url>/2026/07/27/blog-for-test/</url>
@@ -20,9 +51,9 @@
       
         <tags>
             
-            <tag> 测试 </tag>
-            
             <tag> Hexo </tag>
+            
+            <tag> 测试 </tag>
             
         </tags>
       
