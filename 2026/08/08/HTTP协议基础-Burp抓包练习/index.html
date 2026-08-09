@@ -1,0 +1,373 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>HTTP 协议基础与 Burp 抓包练习 | Kaedehara Kazuha</title><meta name="author" content="Kazu-ha"><meta name="copyright" content="Kazu-ha"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="一、前言正式进入 Web 安全学习阶段。而 HTTP 协议是所有 Web 漏洞的基础载体，不管是 SQL 注入、XSS 还是文件上传，最终都要通过 HTTP 数据包传递 Payload。本篇系统整理 HTTP 核心知识点，从请求方法、状态码、核心 Header三大基础模块，再到 Burp Suite 抓包官网实战，把理论和实操对应起来。 二、HTTP 请求方法HTTP 协议定义了多种请求方法，对应">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HTTP 协议基础与 Burp 抓包练习">
+<meta property="og:url" content="http://example.com/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80-Burp%E6%8A%93%E5%8C%85%E7%BB%83%E4%B9%A0/index.html">
+<meta property="og:site_name" content="Kaedehara Kazuha">
+<meta property="og:description" content="一、前言正式进入 Web 安全学习阶段。而 HTTP 协议是所有 Web 漏洞的基础载体，不管是 SQL 注入、XSS 还是文件上传，最终都要通过 HTTP 数据包传递 Payload。本篇系统整理 HTTP 核心知识点，从请求方法、状态码、核心 Header三大基础模块，再到 Burp Suite 抓包官网实战，把理论和实操对应起来。 二、HTTP 请求方法HTTP 协议定义了多种请求方法，对应">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/6.png">
+<meta property="article:published_time" content="2026-08-08T09:14:35.104Z">
+<meta property="article:modified_time" content="2026-08-09T01:28:54.291Z">
+<meta property="article:author" content="Kazu-ha">
+<meta property="article:tag" content="HTTP 协议">
+<meta property="article:tag" content="Burp Suite">
+<meta property="article:tag" content="Web 安全">
+<meta property="article:tag" content="抓包实战">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/6.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "HTTP 协议基础与 Burp 抓包练习",
+  "url": "http://example.com/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80-Burp%E6%8A%93%E5%8C%85%E7%BB%83%E4%B9%A0/",
+  "image": "http://example.com/img/6.png",
+  "datePublished": "2026-08-08T09:14:35.104Z",
+  "dateModified": "2026-08-09T01:28:54.291Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Kazu-ha",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80-Burp%E6%8A%93%E5%8C%85%E7%BB%83%E4%B9%A0/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.6.2"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: 
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'HTTP 协议基础与 Burp 抓包练习',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/touxiang.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">10</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">21</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/timeline/"><i class="fa-fw fa fa-bell"></i><span> 日志</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fa fa-list"></i><span> 菜单</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/%E5%85%B3%E4%BA%8E"><i class="fa-fw /about/"></i><span> 0</span></a></li><li><a class="site-page child" href="/myself"><i class="fa-fw /myself/"></i><span> 1</span></a></li><li><a class="site-page child" href="/butterfly%E4%B8%BB%E9%A2%98"><i class="fa-fw https://github.com/jerryc127/hexo-theme-butterfly/"></i><span> 2</span></a></li></ul></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/6.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Kaedehara Kazuha</span></a><a class="nav-page-title" href="/"><span class="site-name">HTTP 协议基础与 Burp 抓包练习</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/timeline/"><i class="fa-fw fa fa-bell"></i><span> 日志</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fa fa-list"></i><span> 菜单</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/%E5%85%B3%E4%BA%8E"><i class="fa-fw /about/"></i><span> 0</span></a></li><li><a class="site-page child" href="/myself"><i class="fa-fw /myself/"></i><span> 1</span></a></li><li><a class="site-page child" href="/butterfly%E4%B8%BB%E9%A2%98"><i class="fa-fw https://github.com/jerryc127/hexo-theme-butterfly/"></i><span> 2</span></a></li></ul></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">HTTP 协议基础与 Burp 抓包练习</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-08T09:14:35.104Z" title="发表于 2026-08-08 17:14:35">2026-08-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-09T01:28:54.291Z" title="更新于 2026-08-09 09:28:54">2026-08-09</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%8A%80%E6%9C%AF%E6%95%99%E7%A8%8B/">技术教程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="一、前言"><a href="#一、前言" class="headerlink" title="一、前言"></a>一、前言</h2><p>正式进入 Web 安全学习阶段。而 HTTP 协议是所有 Web 漏洞的基础载体，不管是 SQL 注入、XSS 还是文件上传，最终都要通过 HTTP 数据包传递 Payload。<br>本篇系统整理 HTTP 核心知识点，从<strong>请求方法、状态码、核心 Header</strong>三大基础模块，再到 Burp Suite 抓包官网实战，把理论和实操对应起来。</p>
+<h2 id="二、HTTP-请求方法"><a href="#二、HTTP-请求方法" class="headerlink" title="二、HTTP 请求方法"></a>二、HTTP 请求方法</h2><p>HTTP 协议定义了多种请求方法，对应不同的操作语义。在安全测试中，不同方法的攻击面和测试重点完全不同：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>用途</th>
+<th>安全测试关注点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GET</td>
+<td>获取服务器资源</td>
+<td>参数拼接在 URL 中，易泄露敏感信息；重点测试 URL 参数注入</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>向服务器提交数据</td>
+<td>参数放在请求 Body 中；重点测试表单注入、越权提交</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td>上传 &#x2F; 更新服务器资源</td>
+<td>测试权限绕过、恶意文件上传漏洞</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td>删除服务器资源</td>
+<td>测试水平 &#x2F; 垂直越权，未授权删除风险</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>实操提示：Web 安全测试不能只看业务使用的方法，可尝试篡改请求方法（POST 改 GET、PUT&#x2F;DELETE），验证服务端是否做了严格的方法校验，很多越权漏洞由此产生。</p>
+</blockquote>
+<h2 id="三、HTTP-状态码"><a href="#三、HTTP-状态码" class="headerlink" title="三、HTTP 状态码"></a>三、HTTP 状态码</h2><p>状态码是服务器对请求的响应结果标识，不同状态码对应不同的安全测试信号，是判断漏洞存在的重要依据。</p>
+<table>
+<thead>
+<tr>
+<th>状态码</th>
+<th>官方含义</th>
+<th>安全测试场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>200</td>
+<td>OK 请求成功</td>
+<td>接口 &#x2F; 页面正常响应，可继续深入测试</td>
+</tr>
+<tr>
+<td>301&#x2F;302</td>
+<td>重定向跳转</td>
+<td>关注跳转时参数是否跟随传递，测试 URL 跳转漏洞</td>
+</tr>
+<tr>
+<td>400</td>
+<td>Bad Request 请求格式错误</td>
+<td>数据包构造有误，需检查参数格式</td>
+</tr>
+<tr>
+<td>403</td>
+<td>Forbidden 权限不足</td>
+<td>未授权访问拦截，可尝试请求头、路径、参数方式绕过</td>
+</tr>
+<tr>
+<td>404</td>
+<td>Not Found 资源不存在</td>
+<td>请求路径 &#x2F; 文件不存在</td>
+</tr>
+<tr>
+<td>500</td>
+<td>Internal Server Error 服务器内部错误</td>
+<td>高危信号！大概率存在 SQL 注入等漏洞，通常伴随报错信息泄露</td>
+</tr>
+<tr>
+<td>502&#x2F;503</td>
+<td>网关错误 &#x2F; 服务不可用</td>
+<td>后端服务宕机或过载，可测试拒绝服务相关场景</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>核心经验：遇到 500 优先测试注入类漏洞；遇到 403 不要直接放弃，优先尝试各种绕过手段。</p>
+</blockquote>
+<h2 id="四、核心-HTTP-请求头"><a href="#四、核心-HTTP-请求头" class="headerlink" title="四、核心 HTTP 请求头"></a>四、核心 HTTP 请求头</h2><p>请求头是客户端向服务器传递附加信息的载体，绝大多数请求头都可被客户端伪造，是安全测试中重要的可控变量。</p>
+<table>
+<thead>
+<tr>
+<th>Header</th>
+<th>核心作用</th>
+<th>安全意义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Host</td>
+<td>指定目标服务器域名</td>
+<td>可测试 Host 头攻击、虚拟主机越权</td>
+</tr>
+<tr>
+<td>User-Agent</td>
+<td>标识客户端浏览器身份</td>
+<td>可任意伪造；部分 WAF 基于 UA 检测，可通过伪造 UA 绕过</td>
+</tr>
+<tr>
+<td>Content-Type</td>
+<td>声明请求体数据格式</td>
+<td>文件上传漏洞绕过关键，修改 MIME 类型可欺骗后端校验</td>
+</tr>
+<tr>
+<td>Referer</td>
+<td>标记请求来源页面</td>
+<td>用于防盗链、CSRF 防护校验，可伪造绕过</td>
+</tr>
+<tr>
+<td>Cookie</td>
+<td>携带用户会话凭证</td>
+<td>身份认证核心，也是 XSS 漏洞的主要盗取目标</td>
+</tr>
+<tr>
+<td>X-Forwarded-For</td>
+<td>传递客户端真实 IP</td>
+<td>完全可伪造，用于绕过 IP 黑名单、IP 访问限制</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>记忆要点：Cookie、Referer、X-Forwarded-For、User-Agent 均为客户端完全可控，凡是基于这些字段做的安全校验，都存在被绕过的可能。</p>
+</blockquote>
+<h2 id="五、Burp-Suite-抓包练习"><a href="#五、Burp-Suite-抓包练习" class="headerlink" title="五、Burp Suite 抓包练习"></a>五、Burp Suite 抓包练习</h2><p>以中国民航大学官网 <code>www.cauc.edu.cn</code> 为目标，进行基础抓包分析，把上面的理论对应到真实数据包中。</p>
+<h3 id="1-302-重定向流程分析"><a href="#1-302-重定向流程分析" class="headerlink" title="1. 302 重定向流程分析"></a>1. 302 重定向流程分析</h3><p>直接访问网站根路径 <code>/</code>，服务器并不会直接返回页面，而是返回 302 重定向：<br><img src="/img/302.png" alt="302"></p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">HTTP/1.1</span> <span class="number">302</span> Found</span><br><span class="line"><span class="attribute">connection</span><span class="punctuation">: </span>close</span><br><span class="line"><span class="attribute">Location</span><span class="punctuation">: </span>https://www.cauc.edu.cn/zhv5/</span><br></pre></td></tr></table></figure>
+
+<p>完整访问链路：</p>
+<ol>
+<li><p>浏览器发起 <code>GET /</code> 请求</p>
+</li>
+<li><p>服务器返回 <code>302 Found</code>，通过 <code>Location</code> 头指定跳转目标 <code>/zhv5/</code></p>
+</li>
+<li><p>浏览器自动发起第二次请求 <code>GET /zhv5/</code></p>
+</li>
+<li><p>服务器返回 <code>200 OK</code>，返回真实网页内容</p>
+</li>
+</ol>
+<p><img src="/img/200.png" alt="200"></p>
+<blockquote>
+<p>安全考点：如果 <code>Location</code> 头的值可被用户参数控制，就会形成<strong>开放重定向漏洞</strong>，可用于钓鱼攻击。</p>
+</blockquote>
+<h3 id="2-站点地图与响应安全头"><a href="#2-站点地图与响应安全头" class="headerlink" title="2. 站点地图与响应安全头"></a>2. 站点地图与响应安全头</h3><p>Burp 的 Site map 会自动梳理网站的目录结构，可以直观看到网站的所有路径分支，如 <code>jwc</code>、<code>system</code>、<code>xxgk2018</code> 等功能模块。</p>
+<p>在 200 响应包中，可以看到服务器返回的安全响应头：</p>
+<table>
+<thead>
+<tr>
+<th>响应头</th>
+<th>安全作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>X-Frame-Options: SAMEORIGIN</td>
+<td>防止点击劫持，仅允许本站域名嵌入 iframe</td>
+</tr>
+<tr>
+<td>X-XSS-Protection: 1; mode&#x3D;block</td>
+<td>开启浏览器内置 XSS 过滤器，检测到 XSS 直接拦截页面</td>
+</tr>
+<tr>
+<td>X-Content-Type-Options: nosniff</td>
+<td>禁止浏览器自动嗅探文件 MIME 类型，防御 MIME 类型混淆攻击</td>
+</tr>
+<tr>
+<td>Referrer-Policy</td>
+<td>控制 Referer 信息的传递范围，减少信息泄露</td>
+</tr>
+<tr>
+<td>Content-Security-Policy (CSP)</td>
+<td>内容安全策略，严格限制页面可加载的外部资源，是防御 XSS 的强力手段</td>
+</tr>
+</tbody></table>
+<p>同时响应头中 <code>Server: WebServer</code> 也会泄露服务端指纹，攻击者可针对对应版本寻找已知漏洞。</p>
+<h2 id="六、全局知识点总结"><a href="#六、全局知识点总结" class="headerlink" title="六、全局知识点总结"></a>六、全局知识点总结</h2><ol>
+<li><p><strong>方法决定操作</strong>：GET 查、POST 增、PUT 改、DELETE 删，不同方法对应不同漏洞测试方向。</p>
+</li>
+<li><p><strong>状态码是信号</strong>：200 正常测、302 看跳转、403 试绕过、500 找注入。</p>
+</li>
+<li><p><strong>请求头大多可控</strong>：Cookie、UA、Referer、XFF 都能伪造，基于它们的校验都不可靠。</p>
+</li>
+<li><p><strong>响应头看防护</strong>：通过返回的安全头，可以判断网站的基础安全防护强度。</p>
+</li>
+<li><p><strong>重定向是常见流程</strong>：访问根目录 302 跳转到真实首页是绝大多数网站的常规操作，抓包时注意二次请求。</p>
+</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">Kazu-ha</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80-Burp%E6%8A%93%E5%8C%85%E7%BB%83%E4%B9%A0/">http://example.com/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80-Burp%E6%8A%93%E5%8C%85%E7%BB%83%E4%B9%A0/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://example.com" target="_blank">Kaedehara Kazuha</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/HTTP-%E5%8D%8F%E8%AE%AE/">HTTP 协议</a><a class="post-meta__tags" href="/tags/Burp-Suite/">Burp Suite</a><a class="post-meta__tags" href="/tags/Web-%E5%AE%89%E5%85%A8/">Web 安全</a><a class="post-meta__tags" href="/tags/%E6%8A%93%E5%8C%85%E5%AE%9E%E6%88%98/">抓包实战</a></div><div class="post-share"><div class="social-share" data-image="/img/6.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE-python%20ruquest%E8%84%9A%E6%9C%AC/" title="HTTP 协议-python request脚本"><img class="cover" src="/img/7.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">HTTP 协议-python request脚本</div></div><div class="info-2"><div class="info-item-1">一、学习概述完成 DVWA 漏洞靶场独立部署后，正式进入 Web 安全基础打底阶段。按照「底层网络 → 应用层协议 → 脚本实操 → 数据库基础」的路径系统学习，从 OSI 七层模型到 Python 发送 HTTP 请求，再到 MySQL 基础语法，完整打通 Web 请求全链路知识，为后续 SQL 注入、文件上传等漏洞学习筑牢基础。 二、网络基础核心知识点2.1 OSI 七层模型网络通信的分层标准，每一层各司其职，Web 安全绝大多数问题集中在应用层。    层级 名称 核心作用 安全相关    7 应用层 面向用户的网络服务（HTTP、FTP 等） 绝大多数 Web 漏洞发生层   6 表示层 数据格式转换、加密解密 HTTPS 加解密相关   5 会话层 建立、维持会话连接 会话管理、Cookie 机制基础   4 传输层 TCP&#x2F;UDP 端口传输 端口扫描、SYN 洪水攻击   3 网络层 IP 寻址、路由转发 IP 伪造、DDoS 攻击   2 数据链路层 MAC 地址传输 ARP 欺骗、中间人攻击   1 物理层 物理介质传输 -   2.2 TCP&#x2F...</div></div></div></a><a class="pagination-related" href="/2026/08/03/DVWA-SQL%E6%B3%A8%E5%85%A5%E7%BB%83%E4%B9%A0%EF%BC%88low%EF%BC%89/" title="DVWA SQL注入练习（low）"><img class="cover" src="/img/5.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">DVWA SQL注入练习（low）</div></div><div class="info-2"><div class="info-item-1">一、前置学习：Linux 文本处理三剑客正式漏洞练习前，巩固渗透测试高频命令 grep、sed、awk，日志分析、数据提取经常用到。 1. grep + 管道：过滤匹配内容12345678910# 检索包含auth的日志文件ls | grep auth# 筛选passwd中root相关行cat /etc/passwd | grep root# 统计系统总用户数量cat /etc/passwd | wc -l# 查看前5个用户cat /etc/passwd | head -5# 查看最后3个用户cat /etc/passwd | tail -3  用途：渗透中快速筛选日志、目标系统账号信息。 2. sed：流式文本替换1234# 单次替换，只替换第一个匹配echo &quot;hello world&quot; | sed &#x27;s/world/security/&#x27;# 全局替换，加上g标识，全部匹配项都会替换echo &quot;hello hello&quot; | sed &#x27;s/hello/hi/g&#x27;   3. awk：按分隔符提取指定列12...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE-python%20ruquest%E8%84%9A%E6%9C%AC/" title="HTTP 协议-python request脚本"><img class="cover" src="/img/7.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-08</div><div class="info-item-2">HTTP 协议-python request脚本</div></div><div class="info-2"><div class="info-item-1">一、学习概述完成 DVWA 漏洞靶场独立部署后，正式进入 Web 安全基础打底阶段。按照「底层网络 → 应用层协议 → 脚本实操 → 数据库基础」的路径系统学习，从 OSI 七层模型到 Python 发送 HTTP 请求，再到 MySQL 基础语法，完整打通 Web 请求全链路知识，为后续 SQL 注入、文件上传等漏洞学习筑牢基础。 二、网络基础核心知识点2.1 OSI 七层模型网络通信的分层标准，每一层各司其职，Web 安全绝大多数问题集中在应用层。    层级 名称 核心作用 安全相关    7 应用层 面向用户的网络服务（HTTP、FTP 等） 绝大多数 Web 漏洞发生层   6 表示层 数据格式转换、加密解密 HTTPS 加解密相关   5 会话层 建立、维持会话连接 会话管理、Cookie 机制基础   4 传输层 TCP&#x2F;UDP 端口传输 端口扫描、SYN 洪水攻击   3 网络层 IP 寻址、路由转发 IP 伪造、DDoS 攻击   2 数据链路层 MAC 地址传输 ARP 欺骗、中间人攻击   1 物理层 物理介质传输 -   2.2 TCP&#x2F...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/touxiang.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Kazu-ha</div><div class="author-info-description">Ma zweie ra irs manaf chyet oz omnis</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">10</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">21</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/Kazu-ha" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:2461669477@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">一、前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81HTTP-%E8%AF%B7%E6%B1%82%E6%96%B9%E6%B3%95"><span class="toc-number">2.</span> <span class="toc-text">二、HTTP 请求方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81HTTP-%E7%8A%B6%E6%80%81%E7%A0%81"><span class="toc-number">3.</span> <span class="toc-text">三、HTTP 状态码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%A0%B8%E5%BF%83-HTTP-%E8%AF%B7%E6%B1%82%E5%A4%B4"><span class="toc-number">4.</span> <span class="toc-text">四、核心 HTTP 请求头</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Burp-Suite-%E6%8A%93%E5%8C%85%E7%BB%83%E4%B9%A0"><span class="toc-number">5.</span> <span class="toc-text">五、Burp Suite 抓包练习</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-302-%E9%87%8D%E5%AE%9A%E5%90%91%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90"><span class="toc-number">5.1.</span> <span class="toc-text">1. 302 重定向流程分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%AB%99%E7%82%B9%E5%9C%B0%E5%9B%BE%E4%B8%8E%E5%93%8D%E5%BA%94%E5%AE%89%E5%85%A8%E5%A4%B4"><span class="toc-number">5.2.</span> <span class="toc-text">2. 站点地图与响应安全头</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%85%A8%E5%B1%80%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93"><span class="toc-number">6.</span> <span class="toc-text">六、全局知识点总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/08/09/SQL-%E6%B3%A8%E5%85%A5%E4%B8%8E-XSS-CSRF-%E5%85%A5%E9%97%A8%E8%AF%A6%E8%A7%A3/" title="SQL 注入与 XSS/CSRF 入门详解"><img src="/img/8.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="SQL 注入与 XSS/CSRF 入门详解"/></a><div class="content"><a class="title" href="/2026/08/09/SQL-%E6%B3%A8%E5%85%A5%E4%B8%8E-XSS-CSRF-%E5%85%A5%E9%97%A8%E8%AF%A6%E8%A7%A3/" title="SQL 注入与 XSS/CSRF 入门详解">SQL 注入与 XSS/CSRF 入门详解</a><time datetime="2026-08-09T01:16:00.268Z" title="发表于 2026-08-09 09:16:00">2026-08-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE-python%20ruquest%E8%84%9A%E6%9C%AC/" title="HTTP 协议-python request脚本"><img src="/img/7.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="HTTP 协议-python request脚本"/></a><div class="content"><a class="title" href="/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE-python%20ruquest%E8%84%9A%E6%9C%AC/" title="HTTP 协议-python request脚本">HTTP 协议-python request脚本</a><time datetime="2026-08-08T10:04:38.968Z" title="发表于 2026-08-08 18:04:38">2026-08-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80-Burp%E6%8A%93%E5%8C%85%E7%BB%83%E4%B9%A0/" title="HTTP 协议基础与 Burp 抓包练习"><img src="/img/6.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="HTTP 协议基础与 Burp 抓包练习"/></a><div class="content"><a class="title" href="/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80-Burp%E6%8A%93%E5%8C%85%E7%BB%83%E4%B9%A0/" title="HTTP 协议基础与 Burp 抓包练习">HTTP 协议基础与 Burp 抓包练习</a><time datetime="2026-08-08T09:14:35.104Z" title="发表于 2026-08-08 17:14:35">2026-08-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/03/DVWA-SQL%E6%B3%A8%E5%85%A5%E7%BB%83%E4%B9%A0%EF%BC%88low%EF%BC%89/" title="DVWA SQL注入练习（low）"><img src="/img/5.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="DVWA SQL注入练习（low）"/></a><div class="content"><a class="title" href="/2026/08/03/DVWA-SQL%E6%B3%A8%E5%85%A5%E7%BB%83%E4%B9%A0%EF%BC%88low%EF%BC%89/" title="DVWA SQL注入练习（low）">DVWA SQL注入练习（low）</a><time datetime="2026-08-03T05:30:15.000Z" title="发表于 2026-08-03 13:30:15">2026-08-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/02/DVWA%E6%BC%8F%E6%B4%9E%E9%9D%B6%E5%9C%BA%E6%90%AD%E5%BB%BA%E8%AE%B0%E5%BD%95/" title="DVWA漏洞靶场搭建记录"><img src="/img/4.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="DVWA漏洞靶场搭建记录"/></a><div class="content"><a class="title" href="/2026/08/02/DVWA%E6%BC%8F%E6%B4%9E%E9%9D%B6%E5%9C%BA%E6%90%AD%E5%BB%BA%E8%AE%B0%E5%BD%95/" title="DVWA漏洞靶场搭建记录">DVWA漏洞靶场搭建记录</a><time datetime="2026-08-02T04:53:36.000Z" title="发表于 2026-08-02 12:53:36">2026-08-02</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Kazu-ha</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.6.2</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.6.2"></script><script src="/js/main.js?v=5.6.2"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

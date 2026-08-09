@@ -1,0 +1,499 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>HTTP 协议-python request脚本 | Kaedehara Kazuha</title><meta name="author" content="Kazu-ha"><meta name="copyright" content="Kazu-ha"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="一、学习概述完成 DVWA 漏洞靶场独立部署后，正式进入 Web 安全基础打底阶段。按照「底层网络 → 应用层协议 → 脚本实操 → 数据库基础」的路径系统学习，从 OSI 七层模型到 Python 发送 HTTP 请求，再到 MySQL 基础语法，完整打通 Web 请求全链路知识，为后续 SQL 注入、文件上传等漏洞学习筑牢基础。 二、网络基础核心知识点2.1 OSI 七层模型网络通信的分层标准">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HTTP 协议-python request脚本">
+<meta property="og:url" content="http://example.com/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE-python%20ruquest%E8%84%9A%E6%9C%AC/index.html">
+<meta property="og:site_name" content="Kaedehara Kazuha">
+<meta property="og:description" content="一、学习概述完成 DVWA 漏洞靶场独立部署后，正式进入 Web 安全基础打底阶段。按照「底层网络 → 应用层协议 → 脚本实操 → 数据库基础」的路径系统学习，从 OSI 七层模型到 Python 发送 HTTP 请求，再到 MySQL 基础语法，完整打通 Web 请求全链路知识，为后续 SQL 注入、文件上传等漏洞学习筑牢基础。 二、网络基础核心知识点2.1 OSI 七层模型网络通信的分层标准">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/7.png">
+<meta property="article:published_time" content="2026-08-08T10:04:38.968Z">
+<meta property="article:modified_time" content="2026-08-09T01:22:44.805Z">
+<meta property="article:author" content="Kazu-ha">
+<meta property="article:tag" content="HTTP 协议">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="网络基础">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/7.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "HTTP 协议-python request脚本",
+  "url": "http://example.com/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE-python%20ruquest%E8%84%9A%E6%9C%AC/",
+  "image": "http://example.com/img/7.png",
+  "datePublished": "2026-08-08T10:04:38.968Z",
+  "dateModified": "2026-08-09T01:22:44.805Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Kazu-ha",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE-python%20ruquest%E8%84%9A%E6%9C%AC/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.6.2"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: 
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'HTTP 协议-python request脚本',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/touxiang.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">10</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">21</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/timeline/"><i class="fa-fw fa fa-bell"></i><span> 日志</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fa fa-list"></i><span> 菜单</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/%E5%85%B3%E4%BA%8E"><i class="fa-fw /about/"></i><span> 0</span></a></li><li><a class="site-page child" href="/myself"><i class="fa-fw /myself/"></i><span> 1</span></a></li><li><a class="site-page child" href="/butterfly%E4%B8%BB%E9%A2%98"><i class="fa-fw https://github.com/jerryc127/hexo-theme-butterfly/"></i><span> 2</span></a></li></ul></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/7.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Kaedehara Kazuha</span></a><a class="nav-page-title" href="/"><span class="site-name">HTTP 协议-python request脚本</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/timeline/"><i class="fa-fw fa fa-bell"></i><span> 日志</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fa fa-list"></i><span> 菜单</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/%E5%85%B3%E4%BA%8E"><i class="fa-fw /about/"></i><span> 0</span></a></li><li><a class="site-page child" href="/myself"><i class="fa-fw /myself/"></i><span> 1</span></a></li><li><a class="site-page child" href="/butterfly%E4%B8%BB%E9%A2%98"><i class="fa-fw https://github.com/jerryc127/hexo-theme-butterfly/"></i><span> 2</span></a></li></ul></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">HTTP 协议-python request脚本</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-08T10:04:38.968Z" title="发表于 2026-08-08 18:04:38">2026-08-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-09T01:22:44.805Z" title="更新于 2026-08-09 09:22:44">2026-08-09</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%8A%80%E6%9C%AF%E6%95%99%E7%A8%8B/">技术教程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="一、学习概述"><a href="#一、学习概述" class="headerlink" title="一、学习概述"></a>一、学习概述</h2><p>完成 DVWA 漏洞靶场独立部署后，正式进入 Web 安全基础打底阶段。按照「底层网络 → 应用层协议 → 脚本实操 → 数据库基础」的路径系统学习，从 OSI 七层模型到 Python 发送 HTTP 请求，再到 MySQL 基础语法，完整打通 Web 请求全链路知识，为后续 SQL 注入、文件上传等漏洞学习筑牢基础。</p>
+<h2 id="二、网络基础核心知识点"><a href="#二、网络基础核心知识点" class="headerlink" title="二、网络基础核心知识点"></a>二、网络基础核心知识点</h2><h3 id="2-1-OSI-七层模型"><a href="#2-1-OSI-七层模型" class="headerlink" title="2.1 OSI 七层模型"></a>2.1 OSI 七层模型</h3><p>网络通信的分层标准，每一层各司其职，Web 安全绝大多数问题集中在应用层。</p>
+<table>
+<thead>
+<tr>
+<th>层级</th>
+<th>名称</th>
+<th>核心作用</th>
+<th>安全相关</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>7</td>
+<td>应用层</td>
+<td>面向用户的网络服务（HTTP、FTP 等）</td>
+<td>绝大多数 Web 漏洞发生层</td>
+</tr>
+<tr>
+<td>6</td>
+<td>表示层</td>
+<td>数据格式转换、加密解密</td>
+<td>HTTPS 加解密相关</td>
+</tr>
+<tr>
+<td>5</td>
+<td>会话层</td>
+<td>建立、维持会话连接</td>
+<td>会话管理、Cookie 机制基础</td>
+</tr>
+<tr>
+<td>4</td>
+<td>传输层</td>
+<td>TCP&#x2F;UDP 端口传输</td>
+<td>端口扫描、SYN 洪水攻击</td>
+</tr>
+<tr>
+<td>3</td>
+<td>网络层</td>
+<td>IP 寻址、路由转发</td>
+<td>IP 伪造、DDoS 攻击</td>
+</tr>
+<tr>
+<td>2</td>
+<td>数据链路层</td>
+<td>MAC 地址传输</td>
+<td>ARP 欺骗、中间人攻击</td>
+</tr>
+<tr>
+<td>1</td>
+<td>物理层</td>
+<td>物理介质传输</td>
+<td>-</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-TCP-IP-协议特性"><a href="#2-2-TCP-IP-协议特性" class="headerlink" title="2.2 TCP&#x2F;IP 协议特性"></a>2.2 TCP&#x2F;IP 协议特性</h3><ul>
+<li><p><strong>TCP</strong>：面向连接、可靠传输，通过三次握手建立连接、四次挥手断开连接，HTTP、FTP 等应用基于 TCP</p>
+</li>
+<li><p><strong>UDP</strong>：无连接、不可靠、传输速度快，DNS、直播等场景使用</p>
+</li>
+<li><p>安全视角：TCP 三次握手是 SYN 洪水攻击的原理；端口对应服务，是端口扫描的核心基础</p>
+</li>
+</ul>
+<h3 id="2-3-DNS-解析流程"><a href="#2-3-DNS-解析流程" class="headerlink" title="2.3 DNS 解析流程"></a>2.3 DNS 解析流程</h3><p>域名到 IP 地址的转换过程，完整链路：<br>本地缓存 → 递归 DNS 服务器 → 根域名服务器 → 顶级域服务器 → 权威 DNS 服务器 → 返回 IP 给客户端</p>
+<ul>
+<li>安全相关：DNS 劫持、域名欺骗、子域名枚举的底层原理</li>
+</ul>
+<h3 id="2-4-ARP-协议"><a href="#2-4-ARP-协议" class="headerlink" title="2.4 ARP 协议"></a>2.4 ARP 协议</h3><ul>
+<li><p>作用：局域网内将 IP 地址解析为 MAC 地址，是二层通信的基础</p>
+</li>
+<li><p>安全相关：ARP 欺骗攻击，可实现局域网中间人劫持</p>
+</li>
+</ul>
+<h3 id="2-5-HTTPS-基础概念"><a href="#2-5-HTTPS-基础概念" class="headerlink" title="2.5 HTTPS 基础概念"></a>2.5 HTTPS 基础概念</h3><ul>
+<li><p>HTTP + SSL&#x2F;TLS 加密层，解决 HTTP 明文传输的安全问题</p>
+</li>
+<li><p>核心原理：非对称加密交换对称密钥，后续使用对称密钥加密传输数据</p>
+</li>
+<li><p>安全相关：证书校验绕过、降级攻击、中间人攻击</p>
+</li>
+</ul>
+<h2 id="三、MySQL-基础入门"><a href="#三、MySQL-基础入门" class="headerlink" title="三、MySQL 基础入门"></a>三、MySQL 基础入门</h2><p>SQL 注入是 Web 安全的头号漏洞，数据库基础是理解注入原理的前提。</p>
+<h3 id="3-1-库-表-字段关系"><a href="#3-1-库-表-字段关系" class="headerlink" title="3.1 库 &#x2F; 表 &#x2F; 字段关系"></a>3.1 库 &#x2F; 表 &#x2F; 字段关系</h3><ul>
+<li><p><strong>数据库（Database）</strong>：数据的仓库，一个库可包含多张表</p>
+</li>
+<li><p><strong>表（Table）</strong>：同类数据的集合，由行和列组成</p>
+</li>
+<li><p><strong>字段（Field）</strong>：表的列，定义数据的类型和名称</p>
+</li>
+<li><p><strong>行（Row）</strong>：一条具体的数据记录</p>
+</li>
+</ul>
+<p>通俗类比：库 &#x3D; Excel 文件，表 &#x3D; 工作表，字段 &#x3D; 列名，行 &#x3D; 每行数据。</p>
+<h3 id="3-2-基础-SQL-语法"><a href="#3-2-基础-SQL-语法" class="headerlink" title="3.2 基础 SQL 语法"></a>3.2 基础 SQL 语法</h3><p>核心四大操作：增、删、改、查。</p>
+<ol>
+<li><strong>查询数据（SELECT）</strong></li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> 字段<span class="number">1</span>, 字段<span class="number">2</span> <span class="keyword">FROM</span> 表名 <span class="keyword">WHERE</span> 条件;</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li><strong>插入数据（INSERT）</strong></li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT INTO</span> 表名(字段<span class="number">1</span>, 字段<span class="number">2</span>) <span class="keyword">VALUES</span>(值<span class="number">1</span>, 值<span class="number">2</span>);</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li><strong>更新数据（UPDATE）</strong></li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">UPDATE</span> 表名 <span class="keyword">SET</span> 字段 <span class="operator">=</span> 值 <span class="keyword">WHERE</span> 条件;</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li><strong>删除数据（DELETE）</strong></li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DELETE</span> <span class="keyword">FROM</span> 表名 <span class="keyword">WHERE</span> 条件;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-UNION-联合查询"><a href="#3-3-UNION-联合查询" class="headerlink" title="3.3 UNION 联合查询"></a>3.3 UNION 联合查询</h3><p>将多条 SELECT 语句的查询结果纵向合并返回，要求两边查询的字段数量必须一致。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span> <span class="keyword">UNION</span> <span class="keyword">SELECT</span> username,password <span class="keyword">FROM</span> users;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>重点：UNION 联合查询是 SQL 注入最常用的手法，后续漏洞实战会高频使用。</p>
+</blockquote>
+<h2 id="四、Python-requests-实战：网页标题获取工具"><a href="#四、Python-requests-实战：网页标题获取工具" class="headerlink" title="四、Python requests 实战：网页标题获取工具"></a>四、Python requests 实战：网页标题获取工具</h2><p>理论结合实操，用 Python 的 requests 库手动发送 HTTP 请求，实现网页信息采集，这是后续自动化漏洞脚本的基础。</p>
+<h3 id="4-1-环境说明"><a href="#4-1-环境说明" class="headerlink" title="4.1 环境说明"></a>4.1 环境说明</h3><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>运行环境</td>
+<td>Kali Linux</td>
+</tr>
+<tr>
+<td>依赖库</td>
+<td>requests、re、argparse、logging</td>
+</tr>
+<tr>
+<td>测试目标</td>
+<td>本地 DVWA 靶场 <code>http://192.168.170.128/dvwa/</code></td>
+</tr>
+</tbody></table>
+<h3 id="4-2-版本一：基础-GET-请求-Demo"><a href="#4-2-版本一：基础-GET-请求-Demo" class="headerlink" title="4.2 版本一：基础 GET 请求 Demo"></a>4.2 版本一：基础 GET 请求 Demo</h3><p>最简实现，完成发送请求、读取状态码、识别服务版本、提取网页标题。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. 基础 GET 请求</span></span><br><span class="line">url = <span class="string">&quot;http://192.168.170.128/dvwa/&quot;</span>  <span class="comment">#  DVWA 靶场</span></span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    response = requests.get(url, timeout=<span class="number">5</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;状态码: <span class="subst">&#123;response.status_code&#125;</span>&quot;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;响应头: <span class="subst">&#123;response.headers.get(<span class="string">&#x27;Server&#x27;</span>)&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 2. 正则提取网页标题</span></span><br><span class="line">    title = re.search(<span class="string">r&#x27;&lt;title&gt;(.*?)&lt;/title&gt;&#x27;</span>, response.text)</span><br><span class="line">    <span class="keyword">if</span> title:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;网页标题: <span class="subst">&#123;title.group(<span class="number">1</span>)&#125;</span>&quot;</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;未找到标题&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">except</span> requests.exceptions.RequestException <span class="keyword">as</span> e:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;请求出错: <span class="subst">&#123;e&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>运行效果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">状态码: 200</span><br><span class="line">响应头: Apache/2.4.52 (Ubuntu)</span><br><span class="line">网页标题: Login :: Damn Vulnerable Web Application (DVWA)</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-版本二：工具化进阶版本"><a href="#4-3-版本二：工具化进阶版本" class="headerlink" title="4.3 版本二：工具化进阶版本"></a>4.3 版本二：工具化进阶版本</h3><p>针对简易版缺陷进行升级：命令行传参、自定义 UA 模拟浏览器、带时间戳日志、细分异常捕获。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置日志</span></span><br><span class="line">logging.basicConfig(level=logging.INFO, <span class="built_in">format</span>=<span class="string">&#x27;%(asctime)s - %(levelname)s - %(message)s&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_title</span>(<span class="params">url</span>):</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        headers = &#123;</span><br><span class="line">            <span class="string">&#x27;User-Agent&#x27;</span>: <span class="string">&#x27;Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36&#x27;</span></span><br><span class="line">        &#125;</span><br><span class="line">        resp = requests.get(url, headers=headers, timeout=<span class="number">5</span>)</span><br><span class="line">        logging.info(<span class="string">f&quot;目标: <span class="subst">&#123;url&#125;</span>, 状态码: <span class="subst">&#123;resp.status_code&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> resp.status_code == <span class="number">200</span>:</span><br><span class="line">            <span class="keyword">import</span> re</span><br><span class="line">            title = re.search(<span class="string">r&#x27;&lt;title&gt;(.*?)&lt;/title&gt;&#x27;</span>, resp.text, re.IGNORECASE)</span><br><span class="line">            <span class="keyword">if</span> title:</span><br><span class="line">                logging.info(<span class="string">f&quot;标题: <span class="subst">&#123;title.group(<span class="number">1</span>)&#125;</span>&quot;</span>)</span><br><span class="line">            <span class="keyword">return</span> resp.status_code, title.group(<span class="number">1</span>) <span class="keyword">if</span> title <span class="keyword">else</span> <span class="string">&quot;No title&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">except</span> requests.exceptions.ConnectionError:</span><br><span class="line">        logging.error(<span class="string">&quot;连接失败,检查目标是否存活&quot;</span>)</span><br><span class="line">    <span class="keyword">except</span> requests.exceptions.Timeout:</span><br><span class="line">        logging.error(<span class="string">&quot;请求超时&quot;</span>)</span><br><span class="line">    <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">        logging.error(<span class="string">f&quot;未知错误: <span class="subst">&#123;e&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">None</span>, <span class="literal">None</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    parser = argparse.ArgumentParser(description=<span class="string">&quot;网页标题获取工具&quot;</span>)</span><br><span class="line">    parser.add_argument(<span class="string">&quot;-u&quot;</span>, <span class="string">&quot;--url&quot;</span>, required=<span class="literal">True</span>, <span class="built_in">help</span>=<span class="string">&quot;目标URL&quot;</span>)</span><br><span class="line">    args = parser.parse_args()</span><br><span class="line"></span><br><span class="line">    get_title(args.url)</span><br></pre></td></tr></table></figure>
+
+<p>运行方式：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 get_title.py -u http://192.168.170.128/dvwa/</span><br></pre></td></tr></table></figure>
+
+<p>运行效果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2026-08-06 14:33:45,723 - INFO - 目标: http://192.168.170.128/dvwa/, 状态码: 200</span><br><span class="line">2026-08-06 14:33:45,723 - INFO - 标题: Login :: Damn Vulnerable Web Application (DVWA)</span><br></pre></td></tr></table></figure>
+
+<p>运行方式：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 get_title.py -u http://www.baidu.com</span><br></pre></td></tr></table></figure>
+
+<p>运行效果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2026-08-06 14:34:11,714 - INFO - 目标: http://www.baidu.com, 状态码: 200</span><br><span class="line">2026-08-06 14:34:11,716 - INFO - 标题: 百度一下，你就知道</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-4-核心知识点总结"><a href="#4-4-核心知识点总结" class="headerlink" title="4.4 核心知识点总结"></a>4.4 核心知识点总结</h3><ol>
+<li><p><code>requests.get()</code> 发送 GET 请求，<code>timeout</code> 参数防止目标不通时程序卡死</p>
+</li>
+<li><p><code>response.status_code</code> 获取 HTTP 状态码，判断请求结果</p>
+</li>
+<li><p><code>response.headers</code> 获取响应头，可指纹识别后端 Web 服务版本</p>
+</li>
+<li><p>正则 <code>re</code> 匹配提取 HTML 内容，是简易爬虫和信息采集的基础</p>
+</li>
+<li><p><code>argparse</code> 实现命令行参数，是脚本工具化的必备写法</p>
+</li>
+<li><p>细分异常处理：连接失败、请求超时、通用异常分开捕获，便于定位问题</p>
+</li>
+</ol>
+<h2 id="五、HTTP-协议核心梳理"><a href="#五、HTTP-协议核心梳理" class="headerlink" title="五、HTTP 协议核心梳理"></a>五、HTTP 协议核心梳理</h2><p>HTTP 是 Web 通信的载体，所有漏洞 Payload 最终都通过 HTTP 数据包传递。</p>
+<h3 id="5-1-HTTP-请求方法"><a href="#5-1-HTTP-请求方法" class="headerlink" title="5.1 HTTP 请求方法"></a>5.1 HTTP 请求方法</h3><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>用途</th>
+<th>安全测试关注点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GET</td>
+<td>获取服务器资源</td>
+<td>参数在 URL 中易泄露，测试 URL 参数注入</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>提交数据</td>
+<td>参数在请求 Body，测试表单注入、越权提交</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td>上传 &#x2F; 更新资源</td>
+<td>权限绕过、恶意文件上传漏洞</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td>删除资源</td>
+<td>水平 &#x2F; 垂直越权，未授权删除风险</td>
+</tr>
+</tbody></table>
+<h3 id="5-2-常见状态码"><a href="#5-2-常见状态码" class="headerlink" title="5.2 常见状态码"></a>5.2 常见状态码</h3><table>
+<thead>
+<tr>
+<th>状态码</th>
+<th>含义</th>
+<th>安全测试场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>200</td>
+<td>OK 请求成功</td>
+<td>页面 &#x2F; 接口正常响应，可深入测试</td>
+</tr>
+<tr>
+<td>301&#x2F;302</td>
+<td>重定向跳转</td>
+<td>关注参数传递，测试 URL 跳转漏洞</td>
+</tr>
+<tr>
+<td>403</td>
+<td>Forbidden 权限不足</td>
+<td>未授权拦截，尝试请求头 &#x2F; 路径 &#x2F; 参数绕过</td>
+</tr>
+<tr>
+<td>404</td>
+<td>Not Found 资源不存在</td>
+<td>请求路径 &#x2F; 文件不存在</td>
+</tr>
+<tr>
+<td>500</td>
+<td>服务器内部错误</td>
+<td>高危信号，大概率存在 SQL 注入等漏洞</td>
+</tr>
+</tbody></table>
+<h3 id="5-3-核心请求头"><a href="#5-3-核心请求头" class="headerlink" title="5.3 核心请求头"></a>5.3 核心请求头</h3><p>绝大多数请求头客户端可控，是安全测试的重要注入点。</p>
+<table>
+<thead>
+<tr>
+<th>Header</th>
+<th>核心作用</th>
+<th>安全意义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Host</td>
+<td>指定目标服务器域名</td>
+<td>Host 头攻击、虚拟主机越权</td>
+</tr>
+<tr>
+<td>User-Agent</td>
+<td>标识客户端身份</td>
+<td>可伪造，绕过 WAF 检测</td>
+</tr>
+<tr>
+<td>Cookie</td>
+<td>携带用户会话凭证</td>
+<td>身份认证核心，XSS 主要盗取目标</td>
+</tr>
+<tr>
+<td>Referer</td>
+<td>标记请求来源页面</td>
+<td>防盗链 &#x2F; CSRF 校验，可伪造绕过</td>
+</tr>
+<tr>
+<td>X-Forwarded-For</td>
+<td>传递客户端真实 IP</td>
+<td>完全可伪造，绕过 IP 访问限制</td>
+</tr>
+</tbody></table>
+<h3 id="5-4-Burp-抓包实战验证"><a href="#5-4-Burp-抓包实战验证" class="headerlink" title="5.4 Burp 抓包实战验证"></a>5.4 Burp 抓包实战验证</h3><p>通过 Burp 抓包真实网站验证：访问网站根路径 <code>/</code> 时，服务器先返回 <code>302 Found</code>，通过 <code>Location</code> 头指定跳转目标，浏览器自动发起二次请求后才返回 <code>200 OK</code> 的真实页面，与理论完全对应。</p>
+<h2 id="六、今日踩坑与全局总结"><a href="#六、今日踩坑与全局总结" class="headerlink" title="六、今日踩坑与全局总结"></a>六、今日踩坑与全局总结</h2><h3 id="6-1-踩坑记录"><a href="#6-1-踩坑记录" class="headerlink" title="6.1 踩坑记录"></a>6.1 踩坑记录</h3><ol>
+<li><p>requests 请求不加 <code>timeout</code>，目标不存活时程序会长时间卡死</p>
+</li>
+<li><p>正则匹配 title 不加 <code>re.IGNORECASE</code>，遇到大写 <code>&lt;TITLE&gt;</code> 标签会匹配失败</p>
+</li>
+<li><p>SQL 语句中字符串值必须加引号，漏写会直接触发语法报错</p>
+</li>
+</ol>
+<h3 id="6-2-全局总结"><a href="#6-2-全局总结" class="headerlink" title="6.2 全局总结"></a>6.2 全局总结</h3><ol>
+<li><p>网络分层是理解所有网络通信的基础，Web 漏洞基本都集中在应用层</p>
+</li>
+<li><p>HTTP 是 Web 交互的载体，所有攻击载荷最终都要封装进 HTTP 数据包</p>
+</li>
+<li><p>Python requests 是安全自动化的基石，后续爆破、注入、扫描脚本都会基于它扩展</p>
+</li>
+<li><p>MySQL 语法是 SQL 注入的前提，不懂 SQL 就无法理解注入漏洞的本质</p>
+</li>
+</ol>
+<h2 id="七、参考资源"><a href="#七、参考资源" class="headerlink" title="七、参考资源"></a>七、参考资源</h2><table>
+<thead>
+<tr>
+<th>资源</th>
+<th>链接</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>TCP&#x2F;IP 菜鸟教程</td>
+<td><a target="_blank" rel="noopener" href="https://www.runoob.com/tcpip/tcpip-tutorial.html">https://www.runoob.com&#x2F;tcpip&#x2F;tcpip-tutorial.html</a></td>
+</tr>
+<tr>
+<td>MySQL 菜鸟教程</td>
+<td><a target="_blank" rel="noopener" href="https://www.runoob.com/mysql/mysql-tutorial.html">https://www.runoob.com&#x2F;mysql&#x2F;mysql-tutorial.html</a></td>
+</tr>
+<tr>
+<td>SQLi-Labs 注入靶场</td>
+<td><a target="_blank" rel="noopener" href="https://github.com/Audi-1/sqli-labs">https://github.com&#x2F;Audi-1&#x2F;sqli-labs</a></td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">Kazu-ha</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE-python%20ruquest%E8%84%9A%E6%9C%AC/">http://example.com/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE-python%20ruquest%E8%84%9A%E6%9C%AC/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://example.com" target="_blank">Kaedehara Kazuha</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/HTTP-%E5%8D%8F%E8%AE%AE/">HTTP 协议</a><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80/">网络基础</a><a class="post-meta__tags" href="/tags/MySQL/">MySQL</a></div><div class="post-share"><div class="social-share" data-image="/img/7.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/08/09/SQL-%E6%B3%A8%E5%85%A5%E4%B8%8E-XSS-CSRF-%E5%85%A5%E9%97%A8%E8%AF%A6%E8%A7%A3/" title="SQL 注入与 XSS/CSRF 入门详解"><img class="cover" src="/img/8.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">SQL 注入与 XSS/CSRF 入门详解</div></div><div class="info-2"><div class="info-item-1">一、学习概述集中攻克 Web 安全三大高频漏洞：SQL 注入、XSS 跨站脚本、CSRF 跨站请求伪造，同时补充命令注入漏洞原理，全程以 DVWA 靶场为实操载体，从底层原理到手工注入复现，再到防护绕过思路，完整建立「原理 - 利用 - 修复」的漏洞思维框架。  ⚠️ 安全声明：所有漏洞实操均在本地自建 DVWA 靶场中完成，禁止对未授权网站进行漏洞测试。漏洞平台仅做规则学习，严格遵守「只读不挖」原则。  二、SQL 注入核心原理与手工注入2.1 注入点类型SQL 注入的本质是用户可控参数拼接到 SQL 语句中，恶意篡改原有 SQL 逻辑，根据参数类型分为两大类：    类型 特征 判断方法    数字型 参数为整数，无引号包裹 输入 and 1=1 正常，and 1=2 报错 &#x2F; 页面异常   字符型 参数为字符串，被单 &#x2F; 双引号包裹 输入单引号触发语法报错，输入 &#39; and &#39;1&#39;=&#39;1 恢复正常    核心判断依据：单引号是否触发数据库语法报错，报错即说明参数可能直接拼接进 SQL 语句。  2.2 DVWA Mediu...</div></div></div></a><a class="pagination-related" href="/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80-Burp%E6%8A%93%E5%8C%85%E7%BB%83%E4%B9%A0/" title="HTTP 协议基础与 Burp 抓包练习"><img class="cover" src="/img/6.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">HTTP 协议基础与 Burp 抓包练习</div></div><div class="info-2"><div class="info-item-1">一、前言正式进入 Web 安全学习阶段。而 HTTP 协议是所有 Web 漏洞的基础载体，不管是 SQL 注入、XSS 还是文件上传，最终都要通过 HTTP 数据包传递 Payload。本篇系统整理 HTTP 核心知识点，从请求方法、状态码、核心 Header三大基础模块，再到 Burp Suite 抓包官网实战，把理论和实操对应起来。 二、HTTP 请求方法HTTP 协议定义了多种请求方法，对应不同的操作语义。在安全测试中，不同方法的攻击面和测试重点完全不同：    方法 用途 安全测试关注点    GET 获取服务器资源 参数拼接在 URL 中，易泄露敏感信息；重点测试 URL 参数注入   POST 向服务器提交数据 参数放在请求 Body 中；重点测试表单注入、越权提交   PUT 上传 &#x2F; 更新服务器资源 测试权限绕过、恶意文件上传漏洞   DELETE 删除服务器资源 测试水平 &#x2F; 垂直越权，未授权删除风险    实操提示：Web 安全测试不能只看业务使用的方法，可尝试篡改请求方法（POST 改 GET、PUT&#x2F;DELETE），验证服务端...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/07/29/Linux%E6%96%87%E6%9C%AC%E6%A3%80%E7%B4%A2-Python%E8%AE%A1%E7%AE%97%E5%99%A8%E5%8D%87%E7%BA%A7/" title="Linux文本检索 + Python计算器升级"><img class="cover" src="/img/feng.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-29</div><div class="info-item-2">Linux文本检索 + Python计算器升级</div></div><div class="info-2"><div class="info-item-1">｜Kali Linux 文本处理与检索实操所有操作均在安全练习目录 ~/sec_practice 内完成，不修改定制系统核心文件。 1. 测试素材准备通过 Vim 创建模拟日志文件 test_log.txt，写入不同级别的模拟日志行，作为后续检索练习的测试样本。 123456782026-07-29 08:00:01 info system start2026-07-29 08:01:23 warn low memory2026-07-29 08:05:10 error connect failed2026-07-29 08:10:05 info user login2026-07-29 08:15:30 error permission denied2026-07-29 08:20:11 warn disk space 不足2026-07-29 08:25:42 info task finished 操作流程：vim test_log.txt → 按 i 进入编辑 → 输入内容 → Esc → :wq 保存退出。 2. 文件查看核心命令 cat：全量输出文件内容，适合小文件快速...</div></div></div></a><a class="pagination-related" href="/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80-Burp%E6%8A%93%E5%8C%85%E7%BB%83%E4%B9%A0/" title="HTTP 协议基础与 Burp 抓包练习"><img class="cover" src="/img/6.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-08</div><div class="info-item-2">HTTP 协议基础与 Burp 抓包练习</div></div><div class="info-2"><div class="info-item-1">一、前言正式进入 Web 安全学习阶段。而 HTTP 协议是所有 Web 漏洞的基础载体，不管是 SQL 注入、XSS 还是文件上传，最终都要通过 HTTP 数据包传递 Payload。本篇系统整理 HTTP 核心知识点，从请求方法、状态码、核心 Header三大基础模块，再到 Burp Suite 抓包官网实战，把理论和实操对应起来。 二、HTTP 请求方法HTTP 协议定义了多种请求方法，对应不同的操作语义。在安全测试中，不同方法的攻击面和测试重点完全不同：    方法 用途 安全测试关注点    GET 获取服务器资源 参数拼接在 URL 中，易泄露敏感信息；重点测试 URL 参数注入   POST 向服务器提交数据 参数放在请求 Body 中；重点测试表单注入、越权提交   PUT 上传 &#x2F; 更新服务器资源 测试权限绕过、恶意文件上传漏洞   DELETE 删除服务器资源 测试水平 &#x2F; 垂直越权，未授权删除风险    实操提示：Web 安全测试不能只看业务使用的方法，可尝试篡改请求方法（POST 改 GET、PUT&#x2F;DELETE），验证服务端...</div></div></div></a><a class="pagination-related" href="/2026/07/28/Linux%E5%9F%BA%E7%A1%80-Python%E5%9B%9B%E5%88%99%E8%AE%A1%E7%AE%97%E5%99%A8/" title="Linux基础 + Python四则计算器"><img class="cover" src="/img/he.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-28</div><div class="info-item-2">Linux基础 + Python四则计算器</div></div><div class="info-2"><div class="info-item-1">｜Kali Linux 环境搭建 &amp; 基础命令实操 虚拟机网络调试查询 Ubuntu 靶机 IP：192.168.170.128，Kali ping 测试连通正常，NAT 模式攻防实验环境搭建完成。  基础文件命令练习（工作目录 ~/sec_practice）pwd、touch、ls、ls -l、cp、mv、mkdir  权限管理使用 chmod 755 &#x2F; chmod 644 修改文件权限，理解数字权限机制。  Vim 基础入门i 编辑模式、Esc 退出编辑、:wq 保存退出，完成基础文本编辑。   ｜Python 基础知识点：变量、数值类型、input()、print()、算术运算符、if/elif/else 条件分支项目：简易四则运算计算器，支持 + - * /，可识别非法运算符。 源代码123456789101112131415161718# 简易四则计算器num1 = float(input(&quot;请输入第一个数字：&quot;))op = input(&quot;请输入运算符(+ - \* /)：&quot;)num2 = float(inpu...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/touxiang.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Kazu-ha</div><div class="author-info-description">Ma zweie ra irs manaf chyet oz omnis</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">10</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">21</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/Kazu-ha" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:2461669477@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%AD%A6%E4%B9%A0%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">一、学习概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80%E6%A0%B8%E5%BF%83%E7%9F%A5%E8%AF%86%E7%82%B9"><span class="toc-number">2.</span> <span class="toc-text">二、网络基础核心知识点</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-OSI-%E4%B8%83%E5%B1%82%E6%A8%A1%E5%9E%8B"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 OSI 七层模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-TCP-IP-%E5%8D%8F%E8%AE%AE%E7%89%B9%E6%80%A7"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 TCP&#x2F;IP 协议特性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-DNS-%E8%A7%A3%E6%9E%90%E6%B5%81%E7%A8%8B"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 DNS 解析流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-ARP-%E5%8D%8F%E8%AE%AE"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 ARP 协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-HTTPS-%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5"><span class="toc-number">2.5.</span> <span class="toc-text">2.5 HTTPS 基础概念</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81MySQL-%E5%9F%BA%E7%A1%80%E5%85%A5%E9%97%A8"><span class="toc-number">3.</span> <span class="toc-text">三、MySQL 基础入门</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%BA%93-%E8%A1%A8-%E5%AD%97%E6%AE%B5%E5%85%B3%E7%B3%BB"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 库 &#x2F; 表 &#x2F; 字段关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%9F%BA%E7%A1%80-SQL-%E8%AF%AD%E6%B3%95"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 基础 SQL 语法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-UNION-%E8%81%94%E5%90%88%E6%9F%A5%E8%AF%A2"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 UNION 联合查询</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Python-requests-%E5%AE%9E%E6%88%98%EF%BC%9A%E7%BD%91%E9%A1%B5%E6%A0%87%E9%A2%98%E8%8E%B7%E5%8F%96%E5%B7%A5%E5%85%B7"><span class="toc-number">4.</span> <span class="toc-text">四、Python requests 实战：网页标题获取工具</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 环境说明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E7%89%88%E6%9C%AC%E4%B8%80%EF%BC%9A%E5%9F%BA%E7%A1%80-GET-%E8%AF%B7%E6%B1%82-Demo"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 版本一：基础 GET 请求 Demo</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E7%89%88%E6%9C%AC%E4%BA%8C%EF%BC%9A%E5%B7%A5%E5%85%B7%E5%8C%96%E8%BF%9B%E9%98%B6%E7%89%88%E6%9C%AC"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 版本二：工具化进阶版本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E6%A0%B8%E5%BF%83%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93"><span class="toc-number">4.4.</span> <span class="toc-text">4.4 核心知识点总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81HTTP-%E5%8D%8F%E8%AE%AE%E6%A0%B8%E5%BF%83%E6%A2%B3%E7%90%86"><span class="toc-number">5.</span> <span class="toc-text">五、HTTP 协议核心梳理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-HTTP-%E8%AF%B7%E6%B1%82%E6%96%B9%E6%B3%95"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 HTTP 请求方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E5%B8%B8%E8%A7%81%E7%8A%B6%E6%80%81%E7%A0%81"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 常见状态码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E6%A0%B8%E5%BF%83%E8%AF%B7%E6%B1%82%E5%A4%B4"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 核心请求头</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-Burp-%E6%8A%93%E5%8C%85%E5%AE%9E%E6%88%98%E9%AA%8C%E8%AF%81"><span class="toc-number">5.4.</span> <span class="toc-text">5.4 Burp 抓包实战验证</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E4%BB%8A%E6%97%A5%E8%B8%A9%E5%9D%91%E4%B8%8E%E5%85%A8%E5%B1%80%E6%80%BB%E7%BB%93"><span class="toc-number">6.</span> <span class="toc-text">六、今日踩坑与全局总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 踩坑记录</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%85%A8%E5%B1%80%E6%80%BB%E7%BB%93"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 全局总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%8F%82%E8%80%83%E8%B5%84%E6%BA%90"><span class="toc-number">7.</span> <span class="toc-text">七、参考资源</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/08/09/SQL-%E6%B3%A8%E5%85%A5%E4%B8%8E-XSS-CSRF-%E5%85%A5%E9%97%A8%E8%AF%A6%E8%A7%A3/" title="SQL 注入与 XSS/CSRF 入门详解"><img src="/img/8.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="SQL 注入与 XSS/CSRF 入门详解"/></a><div class="content"><a class="title" href="/2026/08/09/SQL-%E6%B3%A8%E5%85%A5%E4%B8%8E-XSS-CSRF-%E5%85%A5%E9%97%A8%E8%AF%A6%E8%A7%A3/" title="SQL 注入与 XSS/CSRF 入门详解">SQL 注入与 XSS/CSRF 入门详解</a><time datetime="2026-08-09T01:16:00.268Z" title="发表于 2026-08-09 09:16:00">2026-08-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE-python%20ruquest%E8%84%9A%E6%9C%AC/" title="HTTP 协议-python request脚本"><img src="/img/7.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="HTTP 协议-python request脚本"/></a><div class="content"><a class="title" href="/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE-python%20ruquest%E8%84%9A%E6%9C%AC/" title="HTTP 协议-python request脚本">HTTP 协议-python request脚本</a><time datetime="2026-08-08T10:04:38.968Z" title="发表于 2026-08-08 18:04:38">2026-08-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80-Burp%E6%8A%93%E5%8C%85%E7%BB%83%E4%B9%A0/" title="HTTP 协议基础与 Burp 抓包练习"><img src="/img/6.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="HTTP 协议基础与 Burp 抓包练习"/></a><div class="content"><a class="title" href="/2026/08/08/HTTP%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80-Burp%E6%8A%93%E5%8C%85%E7%BB%83%E4%B9%A0/" title="HTTP 协议基础与 Burp 抓包练习">HTTP 协议基础与 Burp 抓包练习</a><time datetime="2026-08-08T09:14:35.104Z" title="发表于 2026-08-08 17:14:35">2026-08-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/03/DVWA-SQL%E6%B3%A8%E5%85%A5%E7%BB%83%E4%B9%A0%EF%BC%88low%EF%BC%89/" title="DVWA SQL注入练习（low）"><img src="/img/5.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="DVWA SQL注入练习（low）"/></a><div class="content"><a class="title" href="/2026/08/03/DVWA-SQL%E6%B3%A8%E5%85%A5%E7%BB%83%E4%B9%A0%EF%BC%88low%EF%BC%89/" title="DVWA SQL注入练习（low）">DVWA SQL注入练习（low）</a><time datetime="2026-08-03T05:30:15.000Z" title="发表于 2026-08-03 13:30:15">2026-08-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/08/02/DVWA%E6%BC%8F%E6%B4%9E%E9%9D%B6%E5%9C%BA%E6%90%AD%E5%BB%BA%E8%AE%B0%E5%BD%95/" title="DVWA漏洞靶场搭建记录"><img src="/img/4.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="DVWA漏洞靶场搭建记录"/></a><div class="content"><a class="title" href="/2026/08/02/DVWA%E6%BC%8F%E6%B4%9E%E9%9D%B6%E5%9C%BA%E6%90%AD%E5%BB%BA%E8%AE%B0%E5%BD%95/" title="DVWA漏洞靶场搭建记录">DVWA漏洞靶场搭建记录</a><time datetime="2026-08-02T04:53:36.000Z" title="发表于 2026-08-02 12:53:36">2026-08-02</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Kazu-ha</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.6.2</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.6.2"></script><script src="/js/main.js?v=5.6.2"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
